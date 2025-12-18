@@ -56,13 +56,13 @@ body {
 .navbar-menu a {
   color: white;
   text-decoration: none;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.5rem;
   border-radius: 4px;
   transition: background-color 0.3s;
 }
 
 .navbar-menu a:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #e74c3c;
 }
 
 .navbar-user {
