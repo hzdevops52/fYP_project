@@ -1,53 +1,20 @@
-// backend/models/PDF.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const pdfSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, 'PDF title is required'],
-    trim: true
+const PDFSchema = new mongoose.Schema(
+  {
+    fileName: { type: String, required: true },
+    savedFileName: { type: String }, // ✅ Remove required
+    title: { type: String, required: true },
+    filePath: { type: String, required: true },
+    fileSize: { type: Number },
+    subject: { type: String, default: "General" },
+    pages: { type: Number, default: 1 },
+    summary: { type: String },
+    keyPoints: { type: String },
+    textLength: { type: Number },
+    downloads: { type: Number, default: 0 },
   },
-  description: {
-    type: String,
-    default: ''
-  },
-  filePath: {
-    type: String,
-    required: true
-  },
-  fileName: {
-    type: String,
-    required: true
-  },
-  fileSize: {
-    type: Number,
-    required: true
-  },
-  course: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Course',
-    required: true
-  },
-  uploader: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  downloadCount: {
-    type: Number,
-    default: 0
-  },
-  views: {
-    type: Number,
-    default: 0
-  },
-  tags: [{
-    type: String
-  }],
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('PDF', pdfSchema);
+module.exports = mongoose.model("PDF", PDFSchema);

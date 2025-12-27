@@ -1,52 +1,65 @@
-// backend/server.js
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const path = require('path');
-
-// Load environment variables
-dotenv.config();
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const fs = require("fs");
+const mongoose = require("mongoose");
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+
+// MongoDB Connection
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.error("❌ MongoDB Error:", err));
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Database connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('MongoDB connected successfully'))
-.catch(err => console.error('MongoDB connection error:', err));
+// Serve uploaded files statically
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use("/uploads", express.static(uploadsDir));
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/courses', require('./routes/courses'));
-app.use('/api/pdfs', require('./routes/pdfs'));
-app.use('/api/user', require('./routes/user'));
+app.use("/api/pdfs", require("./routes/pdf"));
+app.use("/api/ai", require("./routes/ai"));
 
-// Basic route
-app.get('/', (req, res) => {
-  res.json({ message: 'PDF Notes Platform API' });
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    message: 'Something went wrong!', 
-    error: process.env.NODE_ENV === 'development' ? err.message : {}
+// Health check
+app.get("/", (req, res) => {
+  res.json({
+    status: "✅ Backend running",
+    database: "MongoDB",
+    ollama: "Ready",
+    model: "llama3.2:1b",
   });
 });
 
-const PORT = process.env.PORT || 5000;
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+// Error handling
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: err.message });
+});
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📁 Uploads directory: ${uploadsDir}`);
+  console.log(`🤖 Ollama model: llama3.2:1b`);
 });
